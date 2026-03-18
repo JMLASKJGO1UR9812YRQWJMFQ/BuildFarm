@@ -1,51 +1,44 @@
-local data = [[28FCAF94-FA95-4DD8-ABB6-4217B2DF5636
-4C695594-86E4-4B5F-B2B0-7A117FB7876A
-81A14D56-72C4-18A3-B4E6-5F178510527B
-3F5BD01B-C833-41F1-99F9-ABA48AC48EA2
-48808D36-DC64-4914-9C16-AA3EC4ABCA4B
-503F5B11-813B-466B-AC8E-91CFE7E40729
-F25DAA4D-10EF-4A4E-8537-66946A71B42F
-3F3CB4BA-8000-48EA-8588-DE04D5E152D0
-B5164D06-4A37-47B8-9050-2937E603F1E4
-A46FC167-3A3C-90D2-67B8-C87F5452A244
-4B435451-314A-4533-4732-50465D2E61FA
-F99D1530-226B-4C77-9804-DDDC790119E7
-67269E4E-B3A6-4034-A747-6AF31EBE8F71
-BDC781D7-E0C4-4FD9-A10A-384E237AF0DB
-7A3D9215-24C4-416A-9CE2-A8D66334CF2C
-A0A55800-644C-4DB8-BAC5-58D5279CA137
-54B79C30-13ED-4643-A58E-C981F0AE92FC
-56006B9C-7300-0000-0000-000000000000
-2EC699BE-F434-4D54-AC87-3FA34DA105EA
-67975BA1-6F60-4780-BC1D-33E18FDEFAFF
-DB3DFB36-85D2-4591-91F8-F506FE6C6DCF
-2935D2F1-2629-45B7-B027-8FE53589452B
-DE7CFCDE-C259-40C8-B1F2-2A75A4779418
-AFD54D56-EBBD-CD28-35D4-45611B24B2AE
-E451677D-4CE9-4E9D-A8E1-A850758BD648
-71132098-4E71-4DA6-9C65-867B3636A0CD]]
+local data = [[0F5A59E3-A363-4603-B8E8-A965B61477A2
+]]
 
 local function getHWID()
-    local cmd = "wmic csproduct get uuid"
-    local handle = io.popen(cmd)
-    local result = handle:read("*a")
-    handle:close()
-    local hwid = result:match("(%w+-%w+-%w+-%w+-%w+)")
-    return hwid
+    local sources = {
+        'chcp 65001 > nul && wmic csproduct get uuid',
+        'chcp 65001 > nul && wmic baseboard get serialnumber',
+        'chcp 65001 > nul && wmic bios get serialnumber',
+        'chcp 65001 > nul && wmic diskdrive get serialnumber',
+    }
+
+    for _, cmd in ipairs(sources) do
+        local handle = io.popen(cmd)
+        if handle then
+            local result = handle:read("*a")
+            handle:close()
+            local hwid = result:match("([%w%-]+)%s*$")
+            
+            if hwid and hwid ~= ''
+                and hwid:lower() ~= 'serialnumber'
+                and hwid:lower() ~= 'uuid'
+                and #hwid > 5 then
+                return hwid
+            end
+        end
+    end
+    return nil
 end
 
 local result = getHWID()
 local found = false
 
-for account in data:gmatch("[^\n]+") do
-    if account == result then
+for hwid in data:gmatch("[^\n]+") do
+    if hwid == result then
         found = true
         break
     end
 end
 
 if not found then
-    return error('Your HWID is not registed!')
+    return error('Your HWID is not registered!')
 else
-    print('Your HWID is registed, running script')
+    print('Your HWID is registered, running script')
 end
