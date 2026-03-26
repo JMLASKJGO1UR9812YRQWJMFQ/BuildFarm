@@ -1,5 +1,4 @@
-local data = [[0F5A59E3-A363-4603-B8E8-A965B61477A2
-AFD54D56-EBBD-CD28-35D4-45611B24B2AE]]
+local data = [[0F5A59E3-A363-4603-B8E8-A965B61477A2]]
 
 local function getHWID()
     local sources = {
